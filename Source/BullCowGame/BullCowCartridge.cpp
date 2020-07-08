@@ -30,7 +30,7 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
 
 void UBullCowCartridge::SetupGame()
 {
-    HiddenWord = TEXT("Algorism"); // Set the Hidden Word / Array?
+    HiddenWord = TEXT("Origami"); // Set the Hidden Word / Array?P
     Lives = HiddenWord.Len(); // Set Lives
     bGameOver = false;
 
@@ -42,7 +42,7 @@ void UBullCowCartridge::SetupGame()
 void UBullCowCartridge::EndGame()
 {
     bGameOver = true;
-    PrintLine(TEXT("Press enter to play again."));
+    PrintLine(TEXT("\nPress enter to play again."));
 }
 
 void UBullCowCartridge::ProcessGuess(FString Guess)
@@ -57,23 +57,29 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
 
     // Array???
     // Check if it is an isogram, if no ask to guess again
+    // if (!IsIsogram)
+    // {
+    //     PrintLine(TEXT("No repeating letters, guess again."))
+    // }
 
     // Check the right number of letters, if not equal ask to guess again
     if (Guess.Len() != HiddenWord.Len())
     {
         PrintLine(TEXT("Your number of letters are not right...\nPlease guess again."));
+        PrintLine(TEXT("The hidden word is %i letter long."), HiddenWord.Len());
         return;
     }
     
     if (--Lives == 0) // Decrement lives by one and check if are equal to zero
     {
         PrintLine(TEXT("Sorry, you lost all your chances."));
-        PrintLine(TEXT("The word is: %s"), *HiddenWord);
+        PrintLine(TEXT("The hidden word was: %s"), *HiddenWord);
         PrintLine(TEXT("### GAME OVER ###"));
         EndGame();
         return;
     }
     
+    // The number of bulls and cows
     PrintLine(TEXT("There's something wrong!\nPlease guess again."));
     PrintLine(TEXT("Chances: %i"), Lives);
 }
