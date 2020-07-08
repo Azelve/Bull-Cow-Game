@@ -10,7 +10,6 @@ void UBullCowCartridge::BeginPlay() // When the game starts
     PrintLine(TEXT("Welcome to Bull&Cows!"));
 
     SetupGame();// Setting Up Game
-
 }
 
 void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
@@ -19,19 +18,17 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
     ClearScreen();
 
     // if game is over then do ClearScreen() and SetupGame()
-    if (bGameOver == true)
+    if (bGameOver)
     {
-        EndGame();
+        SetupGame();
     }
-    // else Checking PlayerGuess
-    else
+    else // Checking PlayerGuess
     {
         // Check if the input is the same that the hidden word
         if (Input == HiddenWord)
         {
             PrintLine(TEXT("You guessed right, yaaay!!!!"));
-            PrintLine(TEXT("Press enter to continue..."));
-            bGameOver = true;
+            EndGame();
         }
         else
         {
@@ -48,9 +45,8 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
             {
                 PrintLine(TEXT("Sorry, you lost all your chances."));
                 PrintLine(TEXT("The word is: %s"), *HiddenWord);
-                PrintLine(TEXT("Press enter to continue..."));
                 PrintLine(TEXT("### GAME OVER ###"));
-                bGameOver = true;
+                EndGame();
             }
             else
             {
@@ -86,5 +82,6 @@ void UBullCowCartridge::SetupGame()
 
 void UBullCowCartridge::EndGame()
 {
-    SetupGame();
+    bGameOver = true;
+    PrintLine(TEXT("Press enter to play again."));
 }
