@@ -24,64 +24,56 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
     }
     else // Checking PlayerGuess
     {
-        // Check if the input is the same that the hidden word
-        if (Input == HiddenWord)
-        {
-            PrintLine(TEXT("You guessed right, yaaay!!!!"));
-            EndGame();
-        }
-        else
-        {
-            // Check the right number of letters, if not equal ask to guess again
-            if (Input.Len() != HiddenWord.Len())
-            {
-                PrintLine(TEXT("Your number of letters are not right...\nPlease guess again."));
-                return;
-            }
-
-            Lives --;
-            
-            if (Lives == 0)
-            {
-                PrintLine(TEXT("Sorry, you lost all your chances."));
-                PrintLine(TEXT("The word is: %s"), *HiddenWord);
-                PrintLine(TEXT("### GAME OVER ###"));
-                EndGame();
-            }
-            else
-            {
-                PrintLine(TEXT("There's something wrong!\nPlease guess again."));
-                PrintLine(TEXT("Chances: %i"), Lives);
-            }
-        }
+        ProcessGuess(Input);
     }
-        
-        // Array???
-        // Check if it is an isogram, if no ask to guess again
-
-        // Remove the life
-
-        // Function???
-        // Check if lives > 0
-        // If yes guess again and show lives left
-        // If no show GameOVer and the hidden word
-
-        // Ask if the player want to play again, if no quit the game
 }
 
 void UBullCowCartridge::SetupGame()
 {
     HiddenWord = TEXT("Algorism"); // Set the Hidden Word / Array?
-    Lives = 3; // Set Lives
+    Lives = HiddenWord.Len(); // Set Lives
     bGameOver = false;
 
     PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("Type in your guess and press enter..."));
-    PrintLine(TEXT("Chances: %i"), Lives);
+    PrintLine(TEXT("You have %i chances."), Lives);
 }
 
 void UBullCowCartridge::EndGame()
 {
     bGameOver = true;
     PrintLine(TEXT("Press enter to play again."));
+}
+
+void UBullCowCartridge::ProcessGuess(FString Guess)
+{
+    // Check if the input is the same that the hidden word
+    if (Guess == HiddenWord)
+    {
+        PrintLine(TEXT("You guessed right, yaaay!!!!"));
+        EndGame();
+        return;
+    }
+
+    // Array???
+    // Check if it is an isogram, if no ask to guess again
+
+    // Check the right number of letters, if not equal ask to guess again
+    if (Guess.Len() != HiddenWord.Len())
+    {
+        PrintLine(TEXT("Your number of letters are not right...\nPlease guess again."));
+        return;
+    }
+    
+    if (--Lives == 0) // Decrement lives by one and check if are equal to zero
+    {
+        PrintLine(TEXT("Sorry, you lost all your chances."));
+        PrintLine(TEXT("The word is: %s"), *HiddenWord);
+        PrintLine(TEXT("### GAME OVER ###"));
+        EndGame();
+        return;
+    }
+    
+    PrintLine(TEXT("There's something wrong!\nPlease guess again."));
+    PrintLine(TEXT("Chances: %i"), Lives);
 }
