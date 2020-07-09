@@ -30,7 +30,7 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
 
 void UBullCowCartridge::SetupGame()
 {
-    HiddenWord = TEXT("Origami"); // Set the Hidden Word / Array?P
+    HiddenWord = TEXT("Amorist"); // Set the Hidden Word / Array?P
     Lives = HiddenWord.Len(); // Set Lives
     bGameOver = false;
 
@@ -55,13 +55,6 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
         return;
     }
 
-    // Array???
-    // Check if it is an isogram, if no ask to guess again
-    // if (!IsIsogram)
-    // {
-    //     PrintLine(TEXT("No repeating letters, guess again."))
-    // }
-
     // Check the right number of letters, if not equal ask to guess again
     if (Guess.Len() != HiddenWord.Len())
     {
@@ -69,6 +62,14 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
         PrintLine(TEXT("The hidden word is %i letter long."), HiddenWord.Len());
         return;
     }
+
+    // Check if it is not an isogram
+    if (!IsIsogram(Guess))
+    {
+        PrintLine(TEXT("No repeating letters, guess again."));
+        return;
+    }
+
     
     if (--Lives == 0) // Decrement lives by one and check if are equal to zero
     {
@@ -82,4 +83,24 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
     // The number of bulls and cows
     PrintLine(TEXT("There's something wrong!\nPlease guess again."));
     PrintLine(TEXT("Chances: %i"), Lives);
+}
+
+bool UBullCowCartridge::IsIsogram(FString Word) const
+{
+    for (int32 i = 0; i < Word.Len(); i++)
+    {
+        for (int32 j = i+1; j < Word.Len(); j++) 
+        {
+            if (Word[i] == Word[j])
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+
+    // Use a "for" to know the letters inside the word?
+    // if Word is an isogram return true
+    // else return false
 }
