@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BullCowCartridge.h"
+#include "HiddeWordList.h"
+// #include "Misc/FileHelper.h"
+// #include "Misc/Paths.h"
 
 
 void UBullCowCartridge::BeginPlay() // When the game starts
@@ -9,7 +12,13 @@ void UBullCowCartridge::BeginPlay() // When the game starts
     // Welcome the player
     PrintLine(TEXT("Welcome to Bull&Cows!"));
 
+    // Loading Words At Runtime
+    // const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
+    // FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
+
+    GetValidWords(Words);
     SetupGame();// Setting Up Game
+    
 }
 
 void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
@@ -87,6 +96,7 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
 
 bool UBullCowCartridge::IsIsogram(FString Word) const
 {
+    // Each letter is compare to another in order to know if is an isogram or not
     for (int32 i = 0; i < Word.Len(); i++)
     {
         for (int32 j = i+1; j < Word.Len(); j++) 
@@ -99,8 +109,21 @@ bool UBullCowCartridge::IsIsogram(FString Word) const
     }
 
     return true;
+}
 
-    // Use a "for" to know the letters inside the word?
-    // if Word is an isogram return true
-    // else return false
+TArray<FString> UBullCowCartridge::GetValidWords(TArray<FString> WordList) const
+{
+    TArray<FString> ValidWords;
+
+    for (int32 i = 0; i < WordList.Num(); i++)
+    {
+        if (WordList[i].Len() >= 4 && WordList[i].Len() <= 8 && IsIsogram(WordList[i]))
+        {
+            ValidWords.Emplace(WordList[i]);
+        }
+    }
+
+    PrintLine(TEXT("The number of valid words is: %i"), ValidWords.Num());
+
+    return ValidWords;
 }
