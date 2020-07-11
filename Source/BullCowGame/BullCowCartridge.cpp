@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BullCowCartridge.h"
-#include "HiddeWordList.h"
-// #include "Misc/FileHelper.h"
-// #include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
     Super::BeginPlay();
+
     // Welcome the player
     PrintLine(TEXT("Welcome to Bull&Cows!"));
 
     // Loading Words At Runtime
-    // const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
-    // FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
-    Isograms = GetValidWords(Words);
+    const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
+    FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
+    Isograms = GetValidWords(WordList);
 
     SetupGame();// Setting Up Game
 
@@ -91,10 +91,9 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     }
     
     // The number of bulls and cows
-    int32 Bulls, Cows;
-    GetBullCows(Guess, Bulls, Cows);
+    FBullCowCount Score = GetBullCows(Guess);
 
-    PrintLine(TEXT("You have %i Bulls and %i Cows"), Bulls, Cows);
+    PrintLine(TEXT("You have %i Bulls and %i Cows"), Score.Bulls, Score.Cows);
     PrintLine(TEXT("There's something wrong!\nPlease guess again."));
     PrintLine(TEXT("Chances: %i"), Lives);
 }
@@ -133,16 +132,15 @@ TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& WordList
     return ValidWords;
 }
 
-void UBullCowCartridge::GetBullCows(const FString& Guess, int32& BullCount, int32& CowCount) const
+FBullCowCount UBullCowCartridge::GetBullCows(const FString& Guess) const
 {
-    BullCount = 0;
-    CowCount = 0;
+    FBullCowCount Count;
 
     for(int32 i = 0; i < Guess.Len(); i++)
     {
         if (Guess[i] == HiddenWord[i])
         {
-            BullCount++;
+            Count.Bulls++;
             continue;
         }
 
@@ -150,9 +148,10 @@ void UBullCowCartridge::GetBullCows(const FString& Guess, int32& BullCount, int3
         {
             if (Guess[i] == HiddenWord[ii])
             {
-                CowCount++;
+                Count.Cows++;
                 break;
             }
         }
     }
+    return Count;
 }
