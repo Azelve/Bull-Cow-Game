@@ -3,6 +3,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
+// Try to break lines in big names
+
 
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
@@ -10,11 +12,11 @@ void UBullCowCartridge::BeginPlay() // When the game starts
 
     // Welcome the player
     PrintLine(TEXT("Welcome to Bull&Cows!"));
-
+    
     // Loading Words At Runtime
     const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
     FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
-    Isograms = GetValidWords(WordList);
+    ValidWordsList = GetValidWords(WordList);
 
     SetupGame();// Setting Up Game
 
@@ -33,19 +35,21 @@ void UBullCowCartridge::OnInput(const FString& PlayerInput) // When the player h
     }
     else // Checking PlayerGuess
     {
-        ProcessGuess(PlayerInput);
+        ProcessGuess(PlayerInput.ToUpper());
     }
 }
 
 void UBullCowCartridge::SetupGame()
 {
-    HiddenWord = Isograms[FMath::RandRange(0, Isograms.Num())]; // Set the Hidden Word
+    FString hidden = ValidWordsList[FMath::RandRange(0, ValidWordsList.Num())]; // Set the Hidden Word«
+    HiddenWord = hidden.ToUpper();
     Lives = HiddenWord.Len(); // Set Lives
     bGameOver = false;
+    ForcaLetter = "";
 
+    PrintLine(TEXT("%s"), *HiddenWord);
     PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("Type in your guess and press enter..."));
-    PrintLine(TEXT("The hidden word is: %s"), *HiddenWord);
     PrintLine(TEXT("You have %i chances."), Lives);
 }
 
@@ -65,15 +69,15 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
         return;
     }
 
-    // Check the right number of letters, if not equal ask to guess again
-    if (Guess.Len() != HiddenWord.Len())
+    // Check if the number of letters are > 0
+    if (Guess.Len() == 0 || Guess.Len() > 1)
     {
-        PrintLine(TEXT("Your number of letters are not right...\nPlease guess again."));
+        PrintLine(TEXT("Please input a letter per time...\nGuess again."));
         PrintLine(TEXT("The hidden word is %i letter long."), HiddenWord.Len());
         return;
     }
 
-    // Check if it is not an isogram
+    // Check if the ForcaLetter has the guess letter
     if (!IsIsogram(Guess))
     {
         PrintLine(TEXT("No repeating letters, guess again."));
@@ -91,37 +95,38 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     }
     
     // The number of bulls and cows
-    FBullCowCount Score = GetBullCows(Guess);
+    // FBullCowCount Score = GetBullCows(Guess);
 
-    PrintLine(TEXT("You have %i Bulls and %i Cows"), Score.Bulls, Score.Cows);
+    GetForca(Guess);
+    // PrintLine(TEXT("\nYou have %i Bulls and %i Cows"), Score.Bulls, Score.Cows);
     PrintLine(TEXT("There's something wrong!\nPlease guess again."));
     PrintLine(TEXT("Chances: %i"), Lives);
 }
 
 bool UBullCowCartridge::IsIsogram(const FString& Word) const
 {
-    // Each letter is compare to another in order to know if is an isogram or not
-    for (int32 i = 0; i < Word.Len(); i++)
+    // Each letter is compare to another in order to know if the guess letter was already used
+    for (int32 i = 0; i < ForcaLetter.Len(); i++)
     {
-        for (int32 j = i+1; j < Word.Len(); j++) 
-        {
-            if (Word[i] == Word[j])
+        // for (int32 j = i+1; j < Word.Len(); j++) 
+        // {
+            if (Word[0] == ForcaLetter[i])
             {
                 return false;
             }
-        }
+        // }
     }
 
     return true;
 }
 
-TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& WordList) const
+TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& ListOfWords) const
 {
     TArray<FString> ValidWords;
 
-    for (FString Word : WordList)
+    for (FString Word : ListOfWords)
     {
-        if (Word.Len() >= 4 && Word.Len() <= 8 && IsIsogram(Word))
+        if (Word.Len() >= 4 && Word.Len() <= 8)
         {
             ValidWords.Emplace(Word);
         }
@@ -132,26 +137,90 @@ TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& WordList
     return ValidWords;
 }
 
-FBullCowCount UBullCowCartridge::GetBullCows(const FString& Guess) const
+void UBullCowCartridge::GetForca(const FString& Guess)
 {
-    FBullCowCount Count;
+    bool bEqual = false;
+    FString ForcaWord;
+    FString Space = " ";
+    ForcaLetter += Guess[0];
 
-    for(int32 i = 0; i < Guess.Len(); i++)
+    // Passe por cada letra do hidden word e veja se já existe no "banco de dados" de letras usadas
+    for (int32 ii = 0; ii < HiddenWord.Len(); ii++)
     {
-        if (Guess[i] == HiddenWord[i])
+        // Para cada letra dentro do "banco de dados" check if is equal to the current hidden word letter index
+        FString Letter;
+        Letter += HiddenWord[ii];
+        for (int32 i = 0; i < ForcaLetter.Len(); i++)
         {
-            Count.Bulls++;
+            // If our ForcaLetter letter is equal to the hidden word add into the Forca/ForcaWord
+            if (ForcaLetter[i] == HiddenWord[ii])
+            {
+                // Forca.Emplace(Letter);
+                ForcaWord += Letter;
+                ForcaWord += " ";
+                bEqual = true; // It is true that exist a equal letter in that index
+                continue;
+            }
+        }
+
+        if (HiddenWord[ii] == Space[0])
+        {   
+            Letter = "-";
+            // Forca.Emplace(Letter);
+            ForcaWord += Letter;
+            ForcaWord += " ";
             continue;
         }
 
-        for (int32 ii = 0; ii < HiddenWord.Len(); ii++)
+        // If doesn't exists a equal letter in the current index will have a vague space
+        if (!bEqual)
         {
-            if (Guess[i] == HiddenWord[ii])
-            {
-                Count.Cows++;
-                break;
-            }
+            Letter = "_";
+            // Forca.Emplace(Letter);
+            ForcaWord += Letter;
+            ForcaWord += " ";
         }
+
+        bEqual = false; // Set false 'cause the next index we don't know yet if exists a equal letter
     }
-    return Count;
+    // PrintLine(TEXT("%s"), *Letter);
+    PrintLine(TEXT("%s"), *ForcaWord);
+    ForcaWord = "";
+
+    // No repeat letters in the ForcaLetter
+    // Can't be repeated letters
+    // Can't be input empty
 }
+
+
+
+
+// FBullCowCount UBullCowCartridge::GetBullCows(const FString& Guess) const
+// {
+//     FBullCowCount Count;
+//     TArray<FString> Forca;
+//     FString ForcaWord;
+
+//     for(int32 i = 0; i < Guess.Len(); i++)
+//     {
+//         Forca.Emplace("_");
+//         ForcaWord += Forca[i];
+//         if (Guess[i] == HiddenWord[i])
+//         {
+//             Count.Bulls++;
+//             continue;
+//         }
+
+//         for (int32 ii = 0; ii < HiddenWord.Len(); ii++)
+//         {
+//             if (Guess[i] == HiddenWord[ii])
+//             {
+//                 Count.Cows++;
+//                 break;
+//             }
+//         }
+//     }
+//     PrintLine(TEXT("%s"), *Forca[0]);
+//     PrintLine(TEXT("%s"), *ForcaWord);
+//     return Count;
+// }
