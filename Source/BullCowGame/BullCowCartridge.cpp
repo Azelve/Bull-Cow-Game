@@ -48,9 +48,9 @@ void UBullCowCartridge::SetupGame()
     ForcaLetter = "";
 
     PrintLine(TEXT("%s"), *HiddenWord);
-    PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
-    PrintLine(TEXT("Type in your guess and press enter..."));
+    // PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("You have %i chances."), Lives);
+    PrintLine(TEXT("Press tab to start typing..."));
 }
 
 void UBullCowCartridge::EndGame()
@@ -73,21 +73,27 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     if (Guess.Len() == 0 || Guess.Len() > 1)
     {
         PrintLine(TEXT("Please input a letter per time...\nGuess again."));
-        PrintLine(TEXT("The hidden word is %i letter long."), HiddenWord.Len());
+        // PrintLine(TEXT("The hidden word is %i letter long."), HiddenWord.Len());
         return;
     }
 
     // Check if the ForcaLetter has the guess letter
     if (!IsIsogram(Guess))
     {
-        PrintLine(TEXT("No repeating letters, guess again."));
+        PrintLine(TEXT("This letter was already used, guess again."));
         return;
     }
 
+    if (GetForca(Guess))
+    {
+        PrintLine(TEXT("You guessed a letter right!"));
+        bNoEmpty = false;
+        return;
+    }
     
     if (--Lives == 0) // Decrement lives by one and check if are equal to zero
     {
-        PrintLine(TEXT("Sorry, you lost all your chances."));
+        PrintLine(TEXT("Cowtastrophic, you lost all your chances."));
         PrintLine(TEXT("The hidden word was: %s"), *HiddenWord);
         PrintLine(TEXT("### GAME OVER ###"));
         EndGame();
@@ -97,9 +103,8 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     // The number of bulls and cows
     // FBullCowCount Score = GetBullCows(Guess);
 
-    GetForca(Guess);
     // PrintLine(TEXT("\nYou have %i Bulls and %i Cows"), Score.Bulls, Score.Cows);
-    PrintLine(TEXT("There's something wrong!\nPlease guess again."));
+    PrintLine(TEXT("The word doesn't have this letter, sorry\nPlease guess again."));
     PrintLine(TEXT("Chances: %i"), Lives);
 }
 
@@ -137,7 +142,7 @@ TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& ListOfWo
     return ValidWords;
 }
 
-void UBullCowCartridge::GetForca(const FString& Guess)
+bool UBullCowCartridge::GetForca(const FString& Guess)
 {
     bool bEqual = false;
     FString ForcaWord;
@@ -154,14 +159,18 @@ void UBullCowCartridge::GetForca(const FString& Guess)
         {
             // If our ForcaLetter letter is equal to the hidden word add into the Forca/ForcaWord
             if (ForcaLetter[i] == HiddenWord[ii])
-            {
-                // Forca.Emplace(Letter);
+            {                
                 ForcaWord += Letter;
                 ForcaWord += " ";
                 bEqual = true; // It is true that exist a equal letter in that index
-                continue;
+                break;
             }
         }
+
+        if (Guess[0] == HiddenWord[ii])
+        {
+            bNoEmpty = true;
+        } 
 
         if (HiddenWord[ii] == Space[0])
         {   
@@ -179,7 +188,7 @@ void UBullCowCartridge::GetForca(const FString& Guess)
             // Forca.Emplace(Letter);
             ForcaWord += Letter;
             ForcaWord += " ";
-        }
+        }      
 
         bEqual = false; // Set false 'cause the next index we don't know yet if exists a equal letter
     }
@@ -187,9 +196,7 @@ void UBullCowCartridge::GetForca(const FString& Guess)
     PrintLine(TEXT("%s"), *ForcaWord);
     ForcaWord = "";
 
-    // No repeat letters in the ForcaLetter
-    // Can't be repeated letters
-    // Can't be input empty
+    return bNoEmpty;
 }
 
 
