@@ -48,7 +48,6 @@ void UBullCowCartridge::SetupGame()
     bGameOver = false;
     ForcaLetter = ""; // Clear the words used before
 
-    PrintLine(TEXT("%s"), *HiddenWord);
     // PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("You have %i chances."), Lives);
 }
