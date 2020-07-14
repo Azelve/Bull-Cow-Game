@@ -26,12 +26,14 @@ class BULLCOWGAME_API UBullCowCartridge : public UCartridge
 	bool IsIsogram(const FString& Word) const;
 	TArray<FString> GetValidWords(const TArray<FString>& ListOfWords) const;
 	bool GetForca(const FString& Guess);
+	void WinProcess(const FString& Letters);
 	// FBullCowCount GetBullCows(const FString& Guess) const;
 
 	private:
 	FString HiddenWord;
 	int32 Lives;
 	FString ForcaLetter;
+	bool bWinGame;
     bool bNoEmpty;
 	bool bGameOver;
 	TArray<FString> WordList;

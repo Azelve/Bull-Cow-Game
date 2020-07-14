@@ -12,6 +12,7 @@ void UBullCowCartridge::BeginPlay() // When the game starts
 
     // Welcome the player
     PrintLine(TEXT("Welcome to Bull&Cows!"));
+    PrintLine(TEXT("Press tab to start typing..."));
     
     // Loading Words At Runtime
     const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
@@ -45,12 +46,11 @@ void UBullCowCartridge::SetupGame()
     HiddenWord = hidden.ToUpper();
     Lives = HiddenWord.Len(); // Set Lives
     bGameOver = false;
-    ForcaLetter = "";
+    ForcaLetter = ""; // Clear the words used before
 
     PrintLine(TEXT("%s"), *HiddenWord);
     // PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("You have %i chances."), Lives);
-    PrintLine(TEXT("Press tab to start typing..."));
 }
 
 void UBullCowCartridge::EndGame()
@@ -64,7 +64,7 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     // Check if the input is the same that the hidden word
     if (Guess == HiddenWord)
     {
-        PrintLine(TEXT("You guessed right, yaaay!!!!"));
+        PrintLine(TEXT("You completed the word, yaaay!!!!"));
         EndGame();
         return;
     }
@@ -72,7 +72,7 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     // Check if the number of letters are > 0
     if (Guess.Len() == 0 || Guess.Len() > 1)
     {
-        PrintLine(TEXT("Please input a letter per time...\nGuess again."));
+        PrintLine(TEXT("Please input a letter per time...\nOr the whole word!"));
         // PrintLine(TEXT("The hidden word is %i letter long."), HiddenWord.Len());
         return;
     }
@@ -80,20 +80,21 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     // Check if the ForcaLetter has the guess letter
     if (!IsIsogram(Guess))
     {
-        PrintLine(TEXT("This letter was already used, guess again."));
+        PrintLine(TEXT("What do you call the feeling that you have\nheard this letter before?\nDeja-moo!"));
         return;
     }
 
     if (GetForca(Guess))
     {
-        PrintLine(TEXT("You guessed a letter right!"));
         bNoEmpty = false;
         return;
     }
     
+    
+    
     if (--Lives == 0) // Decrement lives by one and check if are equal to zero
     {
-        PrintLine(TEXT("Cowtastrophic, you lost all your chances."));
+        PrintLine(TEXT("\nCowtastrophic, you lost all your chances."));
         PrintLine(TEXT("The hidden word was: %s"), *HiddenWord);
         PrintLine(TEXT("### GAME OVER ###"));
         EndGame();
@@ -104,8 +105,11 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
     // FBullCowCount Score = GetBullCows(Guess);
 
     // PrintLine(TEXT("\nYou have %i Bulls and %i Cows"), Score.Bulls, Score.Cows);
-    PrintLine(TEXT("The word doesn't have this letter, sorry\nPlease guess again."));
-    PrintLine(TEXT("Chances: %i"), Lives);
+    if (!bWinGame)
+    {
+        PrintLine(TEXT("\nThe word doesn't have this letter, sorry.\nPlease guess again."));
+        PrintLine(TEXT("Chances: %i"), Lives);
+    }
 }
 
 bool UBullCowCartridge::IsIsogram(const FString& Word) const
@@ -194,9 +198,32 @@ bool UBullCowCartridge::GetForca(const FString& Guess)
     }
     // PrintLine(TEXT("%s"), *Letter);
     PrintLine(TEXT("%s"), *ForcaWord);
+    WinProcess(ForcaWord);
     ForcaWord = "";
-
+    
+    if (bNoEmpty && !bWinGame)
+    {
+        PrintLine(TEXT("\nYou guessed right the letter."));
+    }
     return bNoEmpty;
+}
+
+void UBullCowCartridge::WinProcess(const FString& Letters)
+{
+    FString Empty = "_";
+    for (int32 i = 0; i < Letters.Len(); i++)
+    {
+        if (Letters[i] == Empty[0])
+        {
+            // PrintLine(TEXT("%s"), *Letters);
+            // PrintLine(TEXT("%s"), *Empty);
+            bWinGame = false;
+            return;
+        }
+    }
+    bWinGame = true;
+    PrintLine(TEXT("\nYou completed the word, yaaay!!!!"));
+    EndGame();
 }
 
 
