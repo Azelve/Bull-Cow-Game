@@ -13,7 +13,7 @@ void UBullCowCartridge::BeginPlay() // When the game starts
     // Welcome the player
     PrintLine(TEXT("Welcome to Bull&Cows!"));
     PrintLine(TEXT("Press tab to start typing."));
-    PrintLine(TEXT("Type a letter per time to find the hidden word."));
+    PrintLine(TEXT("Type a letter per time to find the word."));
     
     // Loading Words At Runtime
     const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
