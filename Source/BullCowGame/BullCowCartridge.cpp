@@ -12,7 +12,8 @@ void UBullCowCartridge::BeginPlay() // When the game starts
 
     // Welcome the player
     PrintLine(TEXT("Welcome to Bull&Cows!"));
-    PrintLine(TEXT("Press tab to start typing..."));
+    PrintLine(TEXT("Press tab to start typing."));
+    PrintLine(TEXT("Type a letter per time to find the hidden word."));
     
     // Loading Words At Runtime
     const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
@@ -48,7 +49,7 @@ void UBullCowCartridge::SetupGame()
     bGameOver = false;
     ForcaLetter = ""; // Clear the words used before
 
-    // PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
+    PrintLine(TEXT("Word has %i letters!"), HiddenWord.Len());
     PrintLine(TEXT("You have %i chances."), Lives);
 }
 
